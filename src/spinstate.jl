@@ -1,40 +1,38 @@
-const CRUnion = Union{Float64,Complex128}
-
-struct SpinState{T<:CRUnion}
+struct SpinState{T<:Number}
     dims :: Vector{Int}
     vals :: SparseVector{T}
-    # function SpinState(dims::Vector{Int}, vals::SparseVector{T}) where {T<:CRUnion}
+    # function SpinState(dims::Vector{Int}, vals::SparseVector{T}) where {T}
     #     prod(dims) == size(vals,1) || error("size for spin state doesn't match", prod(dims), size(vals,1))
     #     new{T}(dims, vals)
     # end
 end
 
-# function SpinState(dims::Vector{Int}, vals::SparseVector{T}) where {T<:CRUnion}
+# function SpinState(dims::Vector{Int}, vals::SparseVector{T}) where {T}
 #     return SpinState{T}(dims, vals)
 # end
 
 @inline nspin(s::SpinState) = length(s.dims)
 @inline dimension(s::SpinState) = prod(s.dims)
 
-function kron(s1::SpinState{T}, s2::SpinState{T}) where {T<:CRUnion}
+function kron(s1::SpinState{T}, s2::SpinState{T}) where {T}
     return SpinState([s1.dims; s2.dims], sparse(kron(s1.vals, s2.vals)))
 end
 
-function *(r::R, s::SpinState{T}) where {R<:Number, T<:CRUnion}
+function *(r::R, s::SpinState{T}) where {R<:Number, T}
     return SpinState(s.dims, r .* s.vals)
 end
 
-function +(s1::SpinState{T}, s2::SpinState{T}) where {T<:CRUnion}
+function +(s1::SpinState{T}, s2::SpinState{T}) where {T}
     @assert(s1.dims == s2.dims)
     return SpinState(s1.dims, s1.vals + s2.vals)
 end
 
-function -(s1::SpinState{T}, s2::SpinState{T}) where {T<:CRUnion}
+function -(s1::SpinState{T}, s2::SpinState{T}) where {T}
     @assert(s1.dims == s2.dims)
     return SpinState(s1.dims, s1.vals - s2.vals)
 end
 
-function permutespins(s::SpinState{T}, perm::Vector{Int}) where {T<:CRUnion}
+function permutespins(s::SpinState{T}, perm::Vector{Int}) where {T}
     @assert sort(perm) == collect(1:nspin(s))
 
     nzind = [conf2index(s, index2conf(s, index)[perm]) for index in s.vals.nzind]
